@@ -23,5 +23,5 @@ class SarineGallery extends Viewer
 	play : () -> return		
 	stop : () -> return
 
-@SarineSlider = SarineSlider
+@SarineGallery = SarineGallery
 		
