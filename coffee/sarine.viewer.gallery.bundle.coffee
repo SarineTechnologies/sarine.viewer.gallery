@@ -1,5 +1,5 @@
 ###!
-sarine.viewer.gallery - v0.4.0 -  Thursday, October 20th, 2016, 10:33:11 AM 
+sarine.viewer.gallery - v0.4.0 -  Tuesday, October 25th, 2016, 10:48:21 AM 
  The source code, name, and look and feel of the software are Copyright © 2015 Sarine Technologies Ltd. All Rights Reserved. You may not duplicate, copy, reuse, sell or otherwise exploit any portion of the code, content or visual design elements without express written permission from Sarine Technologies Ltd. The terms and conditions of the sarine.com website (http://sarine.com/terms-and-conditions/) apply to the access and use of this software.
 ###
 
@@ -89,7 +89,7 @@ class SarineGallery extends Viewer
 				if img.src.indexOf('data:image') == -1 && img.src.indexOf('no_stone') == -1			
 					defer.resolve(_t)
 				else
-					_t.isAvailble = false
+					_t.isAvailble = false 
 					_t.element.empty()
 					@canvas = $("<canvas>")		
 					@canvas[0].width = img.width
@@ -98,6 +98,7 @@ class SarineGallery extends Viewer
 					@ctx.drawImage(img, 0, 0, img.width, img.height)
 					@canvas.attr {'class' : 'no_stone'}					
 					_t.element.append(@canvas)
+					defer.resolve(_t)
 			)
 		defer
 
