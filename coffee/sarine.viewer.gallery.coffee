@@ -1,18 +1,20 @@
 ###!
-sarine.viewer.gallery - v0.4.0 -  Tuesday, October 25th, 2016, 10:48:21 AM 
+sarine.viewer.gallery - v0.4.0 -  Sunday, October 30th, 2016, 8:34:34 AM 
  The source code, name, and look and feel of the software are Copyright © 2015 Sarine Technologies Ltd. All Rights Reserved. You may not duplicate, copy, reuse, sell or otherwise exploit any portion of the code, content or visual design elements without express written permission from Sarine Technologies Ltd. The terms and conditions of the sarine.com website (http://sarine.com/terms-and-conditions/) apply to the access and use of this software.
 ###
 class SarineGallery extends Viewer
 
 	constructor: (options) -> 			
-		super(options) 
-		{@ImagesPath, @ImagesArr, @ImageExtention} = options
+		super(options) 		
 		@isAvailble = true
 		@resourcesPrefix = options.baseUrl + "atomic/v1/assets/"	
+		@ImagesArr = []
+		@atomConfig = configuration.experiences.filter((exp)-> exp.atomType == "SarineGallery")[0] 
 		@resources = [
 	      {element:'script',src:'jquery.bxslider.min.js'},
 	      {element:'link',src:'jquery.bxslider.css'}
 	    ]					
+
 
 	convertElement : () ->	
 		@ul = $("<ul class='bxslider'>")
@@ -52,7 +54,8 @@ class SarineGallery extends Viewer
 		@element.append()
 		_t = @
 		@preloadAssets ()->
-			src = configuration.configUrl + _t.ImagesPath + _t.ImagesArr[0]  + _t.ImageExtention
+			firstImageName = _t.atomConfig.imagePattern.replace("*","1")    
+			src = "#{configuration.rawdataBaseUrl}/#{_t.atomConfig.imagesPath}/#{configuration.jewelryId}/gallery/#{firstImageName}"
 			_t.loadImage(src).then((img)->
 				if img.src.indexOf('data:image') == -1 && img.src.indexOf('no_stone') == -1			
 					defer.resolve(_t)
@@ -73,17 +76,21 @@ class SarineGallery extends Viewer
 	full_init : ()-> 
 		defer = $.Deferred() 
 		if @isAvailble
+			for i in [0...@atomConfig.imageCount]
+				@ImagesArr.push @atomConfig.imagePattern.replace("*",i + 1)
 			@imageList = @element.find('.bxslider')
 			@thumbList = @element.find('#bx-pager')
-			for name, index in @ImagesArr
-				@fullSrc = configuration.configUrl + @ImagesPath + name + @ImageExtention
-				@thumbSrc = configuration.configUrl + @ImagesPath + name + '-thumb' + @ImageExtention
-				@imageItem = '<li><img src="' + @fullSrc + '" alt="' + name + '" /></li>'
-				@thumbItem = '<a data-slide-index="'+ index + '" href=""><img src="' + @thumbSrc + '" alt="' + name + '-thumb" /></a>'
+			for name, index in @ImagesArr 
+				@fullSrc = "#{configuration.rawdataBaseUrl}/#{@atomConfig.imagesPath}/#{configuration.jewelryId}/gallery/#{name}"
+				@imageName = "#{name.replace(/\.[^/.]+$/,'')}"
+				@imageExt = "#{name.split('.').pop()}"
+				@thumbSrc = "#{configuration.rawdataBaseUrl}/#{@atomConfig.imagesPath}/#{configuration.jewelryId}/gallery/#{@imageName}.#{@imageExt}"
+				@imageItem = "<li><img src='#{@fullSrc}' alt='#{@imageName}'/></li>"
+				@thumbItem = "<a data-slide-index='#{index}' href=''><img src='#{@thumbSrc}' alt='#{@imageName}-thumb' /></a>"
 				@imageList.append(@imageItem)
 				@thumbList.append(@thumbItem)
 			
-			$('.bxslider').bxSlider({
+			@imageList.bxSlider({
 				pagerCustom: '#bx-pager',
 				controls: false
 			}); 

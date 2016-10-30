@@ -1,6 +1,6 @@
 
 /*!
-sarine.viewer.gallery - v0.4.0 -  Tuesday, October 25th, 2016, 10:48:21 AM 
+sarine.viewer.gallery - v0.4.0 -  Sunday, October 30th, 2016, 8:34:34 AM 
  The source code, name, and look and feel of the software are Copyright © 2015 Sarine Technologies Ltd. All Rights Reserved. You may not duplicate, copy, reuse, sell or otherwise exploit any portion of the code, content or visual design elements without express written permission from Sarine Technologies Ltd. The terms and conditions of the sarine.com website (http://sarine.com/terms-and-conditions/) apply to the access and use of this software.
  */
 
@@ -77,9 +77,12 @@ sarine.viewer.gallery - v0.4.0 -  Tuesday, October 25th, 2016, 10:48:21 AM
     function SarineGallery(options) {
       this.preloadAssets = __bind(this.preloadAssets, this);
       SarineGallery.__super__.constructor.call(this, options);
-      this.ImagesPath = options.ImagesPath, this.ImagesArr = options.ImagesArr, this.ImageExtention = options.ImageExtention;
       this.isAvailble = true;
       this.resourcesPrefix = options.baseUrl + "atomic/v1/assets/";
+      this.ImagesArr = [];
+      this.atomConfig = configuration.experiences.filter(function(exp) {
+        return exp.atomType === "SarineGallery";
+      })[0];
       this.resources = [
         {
           element: 'script',
@@ -143,8 +146,9 @@ sarine.viewer.gallery - v0.4.0 -  Tuesday, October 25th, 2016, 10:48:21 AM
       this.element.append();
       _t = this;
       this.preloadAssets(function() {
-        var src;
-        src = configuration.configUrl + _t.ImagesPath + _t.ImagesArr[0] + _t.ImageExtention;
+        var firstImageName, src;
+        firstImageName = _t.atomConfig.imagePattern.replace("*", "1");
+        src = "" + configuration.rawdataBaseUrl + "/" + _t.atomConfig.imagesPath + "/" + configuration.jewelryId + "/gallery/" + firstImageName;
         return _t.loadImage(src).then(function(img) {
           if (img.src.indexOf('data:image') === -1 && img.src.indexOf('no_stone') === -1) {
             return defer.resolve(_t);
@@ -168,22 +172,27 @@ sarine.viewer.gallery - v0.4.0 -  Tuesday, October 25th, 2016, 10:48:21 AM
     };
 
     SarineGallery.prototype.full_init = function() {
-      var defer, index, name, _i, _len, _ref;
+      var defer, i, index, name, _i, _j, _len, _ref, _ref1;
       defer = $.Deferred();
       if (this.isAvailble) {
+        for (i = _i = 0, _ref = this.atomConfig.imageCount; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+          this.ImagesArr.push(this.atomConfig.imagePattern.replace("*", i + 1));
+        }
         this.imageList = this.element.find('.bxslider');
         this.thumbList = this.element.find('#bx-pager');
-        _ref = this.ImagesArr;
-        for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
-          name = _ref[index];
-          this.fullSrc = configuration.configUrl + this.ImagesPath + name + this.ImageExtention;
-          this.thumbSrc = configuration.configUrl + this.ImagesPath + name + '-thumb' + this.ImageExtention;
-          this.imageItem = '<li><img src="' + this.fullSrc + '" alt="' + name + '" /></li>';
-          this.thumbItem = '<a data-slide-index="' + index + '" href=""><img src="' + this.thumbSrc + '" alt="' + name + '-thumb" /></a>';
+        _ref1 = this.ImagesArr;
+        for (index = _j = 0, _len = _ref1.length; _j < _len; index = ++_j) {
+          name = _ref1[index];
+          this.fullSrc = "" + configuration.rawdataBaseUrl + "/" + this.atomConfig.imagesPath + "/" + configuration.jewelryId + "/gallery/" + name;
+          this.imageName = "" + (name.replace(/\.[^/.]+$/, ''));
+          this.imageExt = "" + (name.split('.').pop());
+          this.thumbSrc = "" + configuration.rawdataBaseUrl + "/" + this.atomConfig.imagesPath + "/" + configuration.jewelryId + "/gallery/" + this.imageName + "." + this.imageExt;
+          this.imageItem = "<li><img src='" + this.fullSrc + "' alt='" + this.imageName + "'/></li>";
+          this.thumbItem = "<a data-slide-index='" + index + "' href=''><img src='" + this.thumbSrc + "' alt='" + this.imageName + "-thumb' /></a>";
           this.imageList.append(this.imageItem);
           this.thumbList.append(this.thumbItem);
         }
-        $('.bxslider').bxSlider({
+        this.imageList.bxSlider({
           pagerCustom: '#bx-pager',
           controls: false
         });
